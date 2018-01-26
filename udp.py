@@ -13,12 +13,12 @@ def server(interface, port):
     print('Listening at', sock.getsockname())
     while True:
         data, address = sock.recvfrom(MAX_BYTES)
-        if random.random() < 0.9:
+        if random.random() < 0.3:
             print('Pretending to drop packet from {}'.format(address))
             continue
         text = data.decode('ascii')
         print('The client at {} says {!r}'.format(address, text))
-        message = 'IMAGEYour data was {} bytes long'.format(len(data))
+        message = 'IMAGYour data was {} bytes long'.format(len(data))
         sock.sendto(message.encode('ascii'), address)
 
 def client(hostname, port):
@@ -34,7 +34,7 @@ def client(hostname, port):
         print('Waiting up to {} seconds for a reply'.format(delay))
         sock.settimeout(delay)
         try:
-            data = sock.recv(MAX_BYTES)
+            data, address = sock.recv(MAX_BYTES)
         except socket.timeout as exc:
             delay *= 2  # wait even longer for the next request
             if delay > 2.0:
@@ -43,9 +43,9 @@ def client(hostname, port):
             break   # we are done, and can stop looping
     text = data.decode('ascii')
     if text.startswith('IMAGE'):
-        print('The server says {!r}'.format(text[5:]))
+        print('The server at {} says {!r}'.format(address, text[5:]))
     else:
-        print('Not valid reply')
+        print('Not a valid reply')
 
 
 if __name__ == '__main__':
