@@ -6,6 +6,7 @@
 import argparse, socket, time
 
 def recvall(sock):
+    start = time.time()
     length = int(sock.recv(10),16)
     print('len: {}'.format(length))
     data = b''
@@ -16,6 +17,7 @@ def recvall(sock):
                            ' %d bytes before the socket closed'
                            % (length, len(data)))
         data += more
+    print('elapsed time: {} ms'.format((time.time()-start))*1000)
     return data
 
 def sendall_(data, sock):
@@ -34,12 +36,11 @@ def server(interface, port):
         print('We have accepted a connection from', sockname)
         print('  Socket name:', sc.getsockname())
         print('  Socket peer:', sc.getpeername())
-        start = time.time()
         message = recvall(sc)
-        print('elapsed time: {} ms'.format((time.time()-start))*1000)
         with open('flower_recv.jpg','wb') as file:
             file.write(message)
-        sendall_('Farewell, client',sc)
+        # print('  Incoming sixteen-octet message:', repr(message))
+        sendall_(b'Farewell, client',sc)
         sc.close()
         print('  Reply sent, socket closed')
 
