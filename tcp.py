@@ -5,7 +5,8 @@
 
 import argparse, socket
 
-def recvall(sock, length):
+def recvall(sock):
+    length = int(sock.recv(10),16)
     data = b''
     while len(data) < length:
         more = sock.recv(length - len(data))
@@ -15,6 +16,11 @@ def recvall(sock, length):
                            % (length, len(data)))
         data += more
     return data
+
+def sendall_(data, sock):
+    data = '{}{}'.format("{0:#0{1}x}".format(len(data),10), data)
+    data = data.encode('ascii')
+    sock.sendall(data)
 
 def server(interface, port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -28,9 +34,9 @@ def server(interface, port):
         print('We have accepted a connection from', sockname)
         print('  Socket name:', sc.getsockname())
         print('  Socket peer:', sc.getpeername())
-        message = recvall(sc, 16)
+        message = recvall(sc)
         print('  Incoming sixteen-octet message:', repr(message))
-        sc.sendall(b'Farewell, client')
+        sendall_('Farewell, client',sc)
         sc.close()
         print('  Reply sent, socket closed')
 
@@ -38,10 +44,9 @@ def client(host, port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((host, port))
     print('Client has been assigned socket name', sock.getsockname())
-    msg = b'Hi there, server'
-    print('size of msg: {}'.format(len(msg)))
-    sock.sendall(msg)
-    reply = recvall(sock, 16)
+    msg = 'Hi there, server'
+    sendall_(msg, sock)
+    reply = recvall(sock)
     print('The server said', repr(reply))
     sock.close()
 
