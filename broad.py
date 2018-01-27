@@ -15,13 +15,15 @@ def server(interface, port):
         data, address = sock.recvfrom(BUFSIZE)
         text = data.decode('ascii')
         print('The client at {} says: {!r}'.format(address, text))
+        data2 = b'i am the server'
+        sock.send(data2)
 
 def client(network, port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
     text = 'Broadcast datagram!'
     sock.sendto(text.encode('ascii'), (network, port))
-    data, address = sock.recv(BUFSIZE)
+    data, address = sock.recvfrom(BUFSIZE)
     text = data.decode('ascii')
     print('The server {} replied {!r}'.format(address, text))
 
