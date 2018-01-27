@@ -19,8 +19,8 @@ def recvall(sock):
     return data
 
 def sendall_(data, sock):
-    data = '{}{}'.format("{0:#0{1}x}".format(len(data),10), data).encode('ascii')
-    sock.sendall(data)
+    length = "{0:#0{1}x}".format(len(data),10).encode()
+    sock.sendall(length+data)
 
 def server(interface, port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
