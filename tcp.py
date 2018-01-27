@@ -7,6 +7,7 @@ import argparse, socket
 
 def recvall(sock):
     length = int(sock.recv(10),16)
+    print('len: {}'.format(length))
     data = b''
     while len(data) < length:
         more = sock.recv(length - len(data))
@@ -18,8 +19,7 @@ def recvall(sock):
     return data
 
 def sendall_(data, sock):
-    data = '{}{}'.format("{0:#0{1}x}".format(len(data),10), data)
-    data = data.encode('ascii')
+    data = '{}{}'.format("{0:#0{1}x}".format(len(data),10), data).encode('ascii')
     sock.sendall(data)
 
 def server(interface, port):
@@ -35,7 +35,9 @@ def server(interface, port):
         print('  Socket name:', sc.getsockname())
         print('  Socket peer:', sc.getpeername())
         message = recvall(sc)
-        print('  Incoming sixteen-octet message:', repr(message))
+        with open('flower_recv.jpg','wb') as file:
+            file.write(message)
+        # print('  Incoming sixteen-octet message:', repr(message))
         sendall_('Farewell, client',sc)
         sc.close()
         print('  Reply sent, socket closed')
@@ -44,8 +46,8 @@ def client(host, port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((host, port))
     print('Client has been assigned socket name', sock.getsockname())
-    msg = 'Hi there, server'
-    sendall_(msg, sock)
+    with open('flower.jpg','rb') as file:
+        sendall_(file.read(), sock)
     reply = recvall(sock)
     print('The server said', repr(reply))
     sock.close()
