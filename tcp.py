@@ -51,7 +51,7 @@ def server(interface, port):
                 mb, time = line.split(',')
                 mbs += float(mb)
                 time_tot += float(time)
-            print('Avg: {:.2} MB/s of {} tries'.format(mbs/time_tot, i))
+            print('Avg: {:f} MB/s of {} tries'.format(mbs/time_tot, i))
 
 def client(host, port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
