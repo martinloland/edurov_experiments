@@ -3,7 +3,7 @@
 # https://github.com/brandon-rhodes/fopnp/blob/m/py3/chapter03/tcp_sixteen.py
 # Simple TCP client and server that send and receive 16 octets
 
-import argparse, socket, time
+import argparse, socket, time, os
 
 def recvall(sock):
     start = time.time()
@@ -18,6 +18,8 @@ def recvall(sock):
         data += more
     end = (time.time()-start)*1000
     print('{} MB took {} ms'.format(len(data)/1000000,end))
+    with open(os.path.join(os.path.dirname(__file__),'log.log'), 'a+') as logfile:
+        logfile.write('{},{}\r'.format(len(data)/1000000, end))
     return data
 
 def sendall_(data, sock):
@@ -55,6 +57,14 @@ def client(host, port):
     reply = recvall(sock)
     print('The server said', repr(reply))
     sock.close()
+    with open(os.path.join(os.path.dirname(__file__),'log.log'), 'r') as logfile:
+        mbs = 0
+        time_tot = 0
+        for i, line in enumerate(logfile.readlines()):
+            mb, time = line.split(',')
+            mbs += float(mb)
+            time_tot += float(time)
+        print('Avg: {:.2} MB/s of {} tries'.format(mbs/time_tot, i))
 
 if __name__ == '__main__':
     choices = {'client': client, 'server': server}
