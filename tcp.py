@@ -44,6 +44,14 @@ def server(interface, port):
         sendall_(b'Farewell, client',sc)
         sc.close()
         print('  Reply sent, socket closed')
+        with open(os.path.join(os.path.dirname(__file__),'log.log'), 'r') as logfile:
+            mbs = 0
+            time_tot = 0
+            for i, line in enumerate(logfile.readlines()):
+                mb, time = line.split(',')
+                mbs += float(mb)
+                time_tot += float(time)
+            print('Avg: {:.2} MB/s of {} tries'.format(mbs/time_tot, i))
 
 def client(host, port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -57,14 +65,6 @@ def client(host, port):
     reply = recvall(sock)
     print('The server said', repr(reply))
     sock.close()
-    with open(os.path.join(os.path.dirname(__file__),'log.log'), 'r') as logfile:
-        mbs = 0
-        time_tot = 0
-        for i, line in enumerate(logfile.readlines()):
-            mb, time = line.split(',')
-            mbs += float(mb)
-            time_tot += float(time)
-        print('Avg: {:.2} MB/s of {} tries'.format(mbs/time_tot, i))
 
 if __name__ == '__main__':
     choices = {'client': client, 'server': server}
