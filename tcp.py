@@ -16,10 +16,10 @@ def recvall(sock):
                            ' %d bytes before the socket closed'
                            % (length, len(data)))
         data += more
-    end = (time.time()-start)*1000
-    print('{} MB took {} ms'.format(len(data)/1000000,end))
+    time_total = (time.time()-start)*1000
+    print('{} MB took {} ms'.format(len(data)/1000000,time_total))
     with open(os.path.join(os.path.dirname(__file__),'log.log'), 'a+') as logfile:
-        logfile.write('{},{}\r'.format(len(data)/1000000, end))
+        logfile.write('{},{}\r'.format(len(data)/1000000, time_total/1000))
     return data
 
 def sendall_(data, sock):
