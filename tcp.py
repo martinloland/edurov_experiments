@@ -16,7 +16,8 @@ def recvall(sock):
                            ' %d bytes before the socket closed'
                            % (length, len(data)))
         data += more
-    print('elapsed time: {} ms'.format((time.time()-start)*1000))
+    end = (time.time()-start)*1000
+    print('{} MB took {} ms'.format(len(data)/1000000,end))
     return data
 
 def sendall_(data, sock):
@@ -46,8 +47,11 @@ def client(host, port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((host, port))
     print('Client has been assigned socket name', sock.getsockname())
-    with open('flower.jpg','rb') as file:
-        sendall_(file.read(), sock)
+    # with open('flower.jpg','rb') as file:
+    #     sendall_(file.read(), sock)
+    msg = b'#'*5*1000000
+    print('sending {} MB'.format(len(msg)/1000000))
+    sendall_(msg, sock)
     reply = recvall(sock)
     print('The server said', repr(reply))
     sock.close()
