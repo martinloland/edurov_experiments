@@ -3,12 +3,13 @@
 # https://github.com/brandon-rhodes/fopnp/blob/m/py3/chapter02/udp_local.py
 # UDP client and server on localhost
 
-import argparse, socket
+import argparse, socket, platform
 import io
 import struct
 import time
-import picamera
 from PIL import Image
+if platform.system() is 'Linux':
+    import picamera
 
 
 class SplitFrames(object):
@@ -37,6 +38,7 @@ def server(interface, port):
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server_socket.bind((interface, port))
     server_socket.listen(0)
+    print('Listening at', server_socket.getsockname())
 
     # Accept a single connection and make a file-like object out of it
     connection = server_socket.accept()[0].makefile('rb')
@@ -67,6 +69,7 @@ def server(interface, port):
 def client(host, port):
     client_socket = socket.socket()
     client_socket.connect((host, port))
+    print('Client has been assigned socket name', client_socket.getsockname())
     connection = client_socket.makefile('wb')
     try:
         output = SplitFrames(connection)
