@@ -3,13 +3,15 @@
 # https://github.com/brandon-rhodes/fopnp/blob/m/py3/chapter02/udp_local.py
 # UDP client and server on localhost
 
-import argparse, socket, platform
+import argparse, socket, platform, sys
 import io
 import struct
 import time
-from PIL import Image
-if platform.system() is 'Linux':
+if platform.system() == 'Linux':
     import picamera
+import pygame
+screen_size = width, height = 640, 480
+from PIL import Image
 
 
 class SplitFrames(object):
@@ -34,6 +36,10 @@ class SplitFrames(object):
 
 
 def server(interface, port):
+    pygame.init()
+    screen = pygame.display.set_mode(screen_size)
+    # snapshot = pygame.image.load("flower.jpg")
+
     server_socket = socket.socket()
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server_socket.bind((interface, port))
@@ -44,6 +50,9 @@ def server(interface, port):
     connection = server_socket.accept()[0].makefile('rb')
     try:
         while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT: sys.exit()
+
             # Read the length of the image as a 32-bit unsigned int. If the
             # length is zero, quit the loop
             image_len = \
@@ -56,11 +65,15 @@ def server(interface, port):
             image_stream.write(connection.read(image_len))
             # Rewind the stream, open it as an image with PIL and do some
             # processing on it
+
+            data = Image.open(image_stream).tobytes()
+            snapshot = pygame.image.fromstring(data, screen_size, 'RGB')
+            # snapshot = pygame.image.frombuffer(image_stream.read(),
+            #                                    screen_size, 'RGB')
+            # snapshot = pygame.image.load(image_stream)
+            screen.blit(snapshot, (0,0))
+            pygame.display.flip()
             image_stream.seek(0)
-            image = Image.open(image_stream)
-            print('Image is %dx%d' % image.size)
-            image.verify()
-            print('Image is verified')
     finally:
         connection.close()
         server_socket.close()
@@ -77,7 +90,7 @@ def client(host, port):
             time.sleep(2)
             start = time.time()
             camera.start_recording(output, format='mjpeg')
-            camera.wait_recording(30)
+            camera.wait_recording(10)
             camera.stop_recording()
             # Write the terminating 0-length to the connection to let the
             # server know we're done
