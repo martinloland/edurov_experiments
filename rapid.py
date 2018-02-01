@@ -38,7 +38,6 @@ class SplitFrames(object):
 def server(interface, port):
     pygame.init()
     screen = pygame.display.set_mode(screen_size)
-    # snapshot = pygame.image.load("flower.jpg")
 
     server_socket = socket.socket()
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -68,9 +67,6 @@ def server(interface, port):
 
             data = Image.open(image_stream).tobytes()
             snapshot = pygame.image.fromstring(data, screen_size, 'RGB')
-            # snapshot = pygame.image.frombuffer(image_stream.read(),
-            #                                    screen_size, 'RGB')
-            # snapshot = pygame.image.load(image_stream)
             screen.blit(snapshot, (0,0))
             pygame.display.flip()
             image_stream.seek(0)
