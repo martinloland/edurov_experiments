@@ -13,7 +13,9 @@ def get_port_dict():
         for line in lines:
             parts = line.decode().replace('  ', ' ').strip().split(' ')
             if parts[0] == 'inet':
-                port_dict.update({port: {'inet': parts[1], 'netmask': parts[3]}})
+                if port in ['eth0', 'wlan0']:
+                    port_dict.update({port: {'inet': parts[1][5:],
+                                             'netmask': parts[3][5:]}})
                 break
             else:
                 port_dict.update({port: None})
