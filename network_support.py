@@ -22,7 +22,7 @@ def get_port_dict():
     return port_dict
 
 
-def check_ip(ip, port):
+def check_ip(ip, port=1060):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         print('testing: {}'.format(ip))
@@ -67,7 +67,7 @@ def find_server(port):
 
     ## Start finding the server
     pool = ThreadPoolExecutor(max_workers=50)
-    results = list(pool.map(check_ip, (ips_to_check, port)))
+    results = list(pool.map(check_ip, ips_to_check))
     print(len(results))
     # for ip in ips_to_check:
     #     thread = Thread(target=check_ip, args=(ip,port,))
