@@ -1,5 +1,5 @@
 import argparse, socket
-from .network_support import find_server
+from network_support import find_server
 
 def recvall(sock):
     length = int(sock.recv(10),16)
