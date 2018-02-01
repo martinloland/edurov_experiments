@@ -22,7 +22,13 @@ def get_port_dict():
 
 def check_ip(ip, port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect((ip, port))
+    try:
+        print('testing: {}'.format(ip))
+        sock.connect((ip, port))
+    except socket.error:
+        return
+    print('connected to {}'.format(ip))
+
 
 def possible_ips(hostname, netmask):
     masks = [int(val) == 0 for val in netmask.split('.')]
@@ -49,6 +55,7 @@ def find_server(port):
         ips_to_check = possible_ips(hostname=ports['eth0']['inet'],
                                     netmask=ports['eth0']['netmask'])
     elif ports['wlan0']:
+        print(ports['wlan0']['inet']+ports['wlan0']['netmask'])
         ips_to_check = possible_ips(hostname=ports['wlan0']['inet'],
                                     netmask=ports['wlan0']['netmask'])
     else:
