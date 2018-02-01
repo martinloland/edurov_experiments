@@ -1,4 +1,5 @@
 import argparse, socket
+from .network_support import find_server
 
 def recvall(sock):
     length = int(sock.recv(10),16)
@@ -18,6 +19,8 @@ def sendall_(data, sock):
 
 def client(host):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    if host == "":
+        host = find_server(1060)
     sock.connect((host, 1060))
     print('Client has been assigned socket name', sock.getsockname())
     msg = b'hey there server'
