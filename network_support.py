@@ -1,8 +1,12 @@
 import subprocess
 import socket
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 STANDARD_PORTS = ['eth0', 'lo', 'wlan0']
+
+def sendall_(data, sock):
+    length = "{0:#0{1}x}".format(len(data),10).encode()
+    sock.sendall(length+data)
 
 def get_port_dict():
     port_dict = {}
@@ -23,13 +27,14 @@ def get_port_dict():
 
 
 def check_ip(ip, port=1060):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    try:
-        print('testing: {}'.format(ip))
-        sock.connect((ip, port))
-    except socket.error:
-        return None
-    print('connected to {}'.format(ip))
+    if ip is None:
+        print('what the heck?')
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.connect((ip, port))
+    # msg = b'hey there server'
+    # print('sending {} MB'.format(len(msg)/1000000))
+    # sendall_(msg, sock)
+    sock.close()
     return ip
 
 
@@ -58,23 +63,25 @@ def find_server(port):
         ips_to_check = possible_ips(hostname=ports['eth0']['inet'],
                                     netmask=ports['eth0']['netmask'])
     elif ports['wlan0']:
-        print(ports['wlan0']['inet']+ports['wlan0']['netmask'])
         ips_to_check = possible_ips(hostname=ports['wlan0']['inet'],
                                     netmask=ports['wlan0']['netmask'])
     else:
         raise(ConnectionAbortedError,
               'Not possible to connect, not connected to ethernet or WiFi.')
 
-    ## Start finding the server
-    pool = ThreadPoolExecutor(max_workers=50)
-    results = list(pool.map(check_ip, ips_to_check))
-    print(len(results))
-    # for ip in ips_to_check:
-    #     thread = Thread(target=check_ip, args=(ip,port,))
-    #     thread.start()
-    #     threads.append(thread)
-    #     if threading.active_count() >= 100:
-    #         for thread in threads:
-    #             thread.join()
-    # for thread in threads:
-    #     thread.join()
+    with ThreadPoolExecutor(
+            max_workers=100) as executor:
+        # Start the load operations and mark each future with its URL
+        future_to_url = {executor.submit(check_ip, ip): ip for
+                         ip in ips_to_check}
+        for future in as_completed(future_to_url, timeout=3):
+            if future.running():
+                print(future)
+            try:
+                data = future.result(timeout=3)
+            except Exception as exc:
+                pass
+            else:
+                print(data)
+                break
+    return None
