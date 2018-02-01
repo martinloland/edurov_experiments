@@ -67,7 +67,7 @@ def find_server(port):
 
     ## Start finding the server
     pool = ThreadPoolExecutor(max_workers=50)
-    results = list(pool.map(check_ip, ips_to_check))
+    results = list(pool.map(check_ip, (ips_to_check, port)))
     print(len(results))
     # for ip in ips_to_check:
     #     thread = Thread(target=check_ip, args=(ip,port,))
