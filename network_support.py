@@ -1,6 +1,6 @@
 import subprocess
-from threading import Thread
 import socket
+from concurrent.futures import ThreadPoolExecutor
 
 STANDARD_PORTS = ['eth0', 'lo', 'wlan0']
 
@@ -26,8 +26,9 @@ def check_ip(ip, port):
         print('testing: {}'.format(ip))
         sock.connect((ip, port))
     except socket.error:
-        return
+        return None
     print('connected to {}'.format(ip))
+    return ip
 
 
 def possible_ips(hostname, netmask):
@@ -63,10 +64,15 @@ def find_server(port):
               'Not possible to connect, not connected to ethernet or WiFi.')
 
     ## Start finding the server
-    threads = []
-    for ip in ips_to_check:
-        thread = Thread(target=check_ip, args=(ip,port,))
-        thread.start()
-        threads.append(thread)
-    for thread in threads:
-        thread.join()
+    pool = ThreadPoolExecutor(max_workers=50)
+    results = list(pool.map(check_ip, ips_to_check))
+    print(len(results))
+    # for ip in ips_to_check:
+    #     thread = Thread(target=check_ip, args=(ip,port,))
+    #     thread.start()
+    #     threads.append(thread)
+    #     if threading.active_count() >= 100:
+    #         for thread in threads:
+    #             thread.join()
+    # for thread in threads:
+    #     thread.join()
