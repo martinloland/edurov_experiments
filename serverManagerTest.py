@@ -48,18 +48,13 @@ class ROVManager(BaseManager):
             self.register('sensor_values')
             self.connect()
 
-    def fun(self):
-        return self.sensor_values()
-
-
 
 if __name__ == '__main__':
 
-    serv = multiprocessing.Process(target=start_server)
+    p0 = multiprocessing.Process(target=start_server)
     p1 = multiprocessing.Process(target=rov)
     p2 = multiprocessing.Process(target=reader)
-    processes = [serv, p1, p2]
-
+    processes = [p0, p1, p2]
     for p in processes:
         p.start()
 
@@ -67,6 +62,7 @@ if __name__ == '__main__':
 
     while mgr.sensor_values().get('exit') is False:
         time.sleep(0.05)
+
     print('\nShutting down server')
     time.sleep(1)
-    serv.terminate()
+    p0.terminate()
