@@ -25,8 +25,6 @@ if __name__ == '__main__':
     p2 = multiprocessing.Process(target=reader, args=(sensor_values,))
     processes = [p1, p2]
 
-    start = time.time()
-
     for p in processes:
         p.start()
 
