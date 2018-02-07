@@ -3,24 +3,19 @@ import datetime as dt
 from multiprocessing.managers import BaseManager
 
 def rov():
-    print('will noe create server in rov')
     mgr = BaseManager(address=('127.0.0.1',5050), authkey=b'abc')
-    mgr.connect()
-    print('connected in rov')
     mgr.register('sensor_values')
     mgr.connect()
     sensor_values = mgr.sensor_values()
-    while sensor_values['exit'] is False:
+    while sensor_values.get('exit') is False:
         sensor_values.update({'time':dt.datetime.now().isoformat(),
                               'voltage':random.randrange(10)})
         time.sleep(0.001)
 
 def reader():
     start = time.time()
-    print('will noe create server in reader')
     mgr = BaseManager(address=('127.0.0.1',5050), authkey=b'abc')
     mgr.connect()
-    print('connected in reader')
     mgr.register('sensor_values')
     mgr.connect()
     sensor_values = mgr.sensor_values()
@@ -33,7 +28,7 @@ def reader():
         time.sleep(0.05)
 
 if __name__ == '__main__':
-    mgr = BaseManager(address=('',5050), authkey=b'abc')
+    mgr = BaseManager(address=('0.0.0.0',5050), authkey=b'abc')
     sensor_values = {'exit':False}
     mgr.register('sensor_values', callable=lambda:sensor_values)
     server = mgr.get_server()
@@ -44,7 +39,6 @@ if __name__ == '__main__':
 
     for p in processes:
         p.start()
-    print('started all p')
+    server.serve_forever()
     for p in processes:
         p.join()
-    server.serve_forever()
