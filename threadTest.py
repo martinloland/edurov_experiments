@@ -31,10 +31,11 @@ def client(host):
     sock.close()
 
 def server(host):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     sock.bind((host, 1060))
-    sock.listen(1)
+    data, address = sock.recvfrom(65535)
+    # sock.listen(1)
     print('Listening at', sock.getsockname())
     print('Client should connect to {}'
           .format(socket.gethostbyname(socket.gethostname())))
