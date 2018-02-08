@@ -1,10 +1,10 @@
-import multiprocessing, time, sys, random
+import multiprocessing, time, sys, random, argparse, socket
 import datetime as dt
 from multiprocessing.managers import BaseManager
 
 
-def rov():
-    mgr = ROVManager(role='client', address='127.0.0.1')
+def rov(address='127.0.0.1'):
+    mgr = ROVManager(role='client', address=address)
     sensor_values = mgr.sensor_values()
 
     while sensor_values.get('exit') is False:
@@ -19,7 +19,7 @@ def reader():
     sensor_values = mgr.sensor_values()
 
     while True:
-        if time.time()-start > 3:
+        if time.time()-start > 30:
             sensor_values.update({'exit': True})
             break
         sys.stdout.write('\r{}'.format(sensor_values))
@@ -27,6 +27,8 @@ def reader():
 
 
 def start_server():
+    print('Client should connect to {}'
+          .format(socket.gethostbyname(socket.gethostname())))
     mgr = ROVManager(role='server')
 
 
@@ -50,19 +52,27 @@ class ROVManager(BaseManager):
 
 
 if __name__ == '__main__':
+    choices = {'client': 'client', 'server': 'server'}
+    parser = argparse.ArgumentParser(description='Communicate with Manager')
+    parser.add_argument('role', choices=choices, help='which role to play')
+    parser.add_argument('-ip', help='ip the client connects to')
+    args = parser.parse_args()
 
-    p0 = multiprocessing.Process(target=start_server)
-    p1 = multiprocessing.Process(target=rov)
-    p2 = multiprocessing.Process(target=reader)
-    processes = [p0, p1, p2]
-    for p in processes:
-        p.start()
+    if args.role == 'server':
+        p0 = multiprocessing.Process(target=start_server)
+        p2 = multiprocessing.Process(target=reader)
+        p0.start()
+        p2.start()
 
-    mgr = ROVManager(role='client', address='127.0.0.1')
+        mgr = ROVManager(role='client', address='127.0.0.1')
 
-    while mgr.sensor_values().get('exit') is False:
-        time.sleep(0.05)
+        while mgr.sensor_values().get('exit') is False:
+            time.sleep(0.05)
 
-    print('\nShutting down server')
-    time.sleep(1)
-    p0.terminate()
+        print('\nShutting down server')
+        time.sleep(1)
+        p0.terminate()
+
+    elif args.role == 'client':
+        p1 = multiprocessing.Process(target=rov, args=(args.ip,))
+        p1.start()
